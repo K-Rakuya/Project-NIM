@@ -8,7 +8,9 @@ public final class NimTheory {
     private NimTheory() {
     }
 
-    // Đống có 1 item
+    /**
+     * Đếm số lượng đống có 1 item
+     */
     private static int countOnes(GameState s) {
         int n = 0;
         for (int i = 0; i < s.heapCount(); i++)
@@ -18,7 +20,9 @@ public final class NimTheory {
         return n;
     }
 
-    // Đống có ít nhất 2 item
+    /**
+     * Đếm số lượng đống có ít nhất 2 item
+     */
     private static int countBigHeaps(GameState s) {
         int n = 0;
         for (int i = 0; i < s.heapCount(); i++)
@@ -28,6 +32,9 @@ public final class NimTheory {
         return n;
     }
 
+    /**
+     * Tìm đống lớn đầu tiên
+     */
     private static int firstBigHeaps(GameState s) {
         for (int i = 0; i < s.heapCount(); i++)
             if (s.heap(i) >= 2) {
@@ -55,8 +62,9 @@ public final class NimTheory {
         return s.nimSum() == 0;
     }
 
-    // Trả về một nước đi thắng, hoặc null nếu đang ở thế thua / ván đã hết.
-
+    /**
+     * Trả về một nước đi thắng, hoặc null nếu đang ở thế thua / ván đã hết.
+     */
     public static Move findingWinningMove(GameState s) {
         if (s.isTerminal() || isLosingForCurrentPlayer(s)) {
             return null;
@@ -83,7 +91,9 @@ public final class NimTheory {
             }
         }
 
-        // Luật thường, hoặc misère khi còn >= 2 đống lớn: đưa nim-sum về 0.
+        /**
+         * Luật thường, hoặc misère khi còn >= 2 đống lớn: đưa nim-sum về 0.
+         */
         int x = s.nimSum();
         for (int i = 0; i < s.heapCount(); i++) {
 

@@ -74,7 +74,9 @@ public final class GameState {
         return totalItems() == 0;
     }
 
-    // Ket thuc van
+    /**
+     * ket thuc van
+     */
     public int winner() {
         if (!isTerminal()) {
             throw new IllegalStateException("Van chua ket thuc");
@@ -82,7 +84,9 @@ public final class GameState {
         return misere ? currentPlayer : 1 - currentPlayer;
     }
 
-    // lay tat ca nuoc di hop le
+    /**
+     * lay tat ca nuoc di hop le
+     */
     public List<Move> legalMoves() {
         List<Move> moves = new ArrayList<>();
         for (int i = 0; i < heaps.length; i++) {
@@ -99,7 +103,9 @@ public final class GameState {
                 && m.count() <= heaps[m.heapIndex()];
     }
 
-    // Ap dung nuoc di, tra ve trang thai moi
+    /**
+     * Áp dụng nước đi, trả về trạng thái mới
+     */
     public GameState apply(Move m) {
         if (!isLegal(m)) {
             throw new IllegalArgumentException("Nước đi không hợp lệ");
@@ -109,7 +115,9 @@ public final class GameState {
         return new GameState(next, 1 - currentPlayer, misere);
     }
 
-    // key cho cache
+    /**
+     * key cho việc cache lại trạng thái để dễ tìm kiếm
+     */
     public String canonicalKey() {
         int[] sorted = heaps.clone();
         Arrays.sort(sorted);
