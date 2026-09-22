@@ -46,4 +46,6 @@ public final class StateGenerator {
         }
         throw new IllegalStateException("Không sinh được thế cờ thỏa ràng buộc sau " + MAX_ATTEMPTS + " lần thử");
     }
+
+    //Sau này đổi thành giải thuật tạo n-1 đống rồi dựa trên nim-sum tạo ra đống cuối để tối ưu
 }
