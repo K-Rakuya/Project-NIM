@@ -19,7 +19,7 @@ public class GameStateTest {
 
     @Test
     void soNuocDiHopLeBangTongSoItem() {
-        assertEquals(15, GameState.of(false, 1, 2, 3).legalMoves().size());
+        assertEquals(15, GameState.of(false, 3, 5, 7).legalMoves().size());
     }
 
     @Test
