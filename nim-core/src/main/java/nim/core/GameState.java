@@ -5,45 +5,45 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class GameState {
+public final class GameState {
     private final int[] heaps;
-    private final int currentPlayer;
-    private final boolean misere;
+    private final int currentPlayer; // 0 hoac 1, player 0 di truoc
+    private final boolean misere; // true = ai boc que cuoi cung thi thua
 
     public GameState(int[] heaps, int currentPlayer, boolean misere) {
         if (heaps == null || heaps.length == 0) {
-            throw new IllegalArgumentException("Ván chơi phải có ít nhất 1 đống");
+            throw new IllegalArgumentException("Phải có ít nhất 1 đống");
         }
         for (int h : heaps) {
             if (h < 0)
-                throw new IllegalArgumentException("Số vật phẩm không được âm");
+                throw new IllegalArgumentException("Số vật phẩm ko đc âm");
         }
         if (currentPlayer != 0 && currentPlayer != 1) {
-            throw new IllegalArgumentException("currentPlayer không hợp lệ");
+            throw new IllegalArgumentException("currentPlayer chỉ chấp nhận 0 và 1");
         }
-
         this.heaps = heaps;
         this.currentPlayer = currentPlayer;
         this.misere = misere;
     }
 
-    public static GameState createInitialState(boolean misere, int... heaps) {
+    // Init game
+    public static GameState of(boolean misere, int... heaps) {
         return new GameState(heaps, 0, misere);
     }
 
-    public int getHeapsCount() {
+    public int heapCount() {
         return heaps.length;
     }
 
-    public int getHeap(int i) {
+    public int heap(int i) {
         return heaps[i];
     }
 
-    public int[] getHeap() {
+    public int[] heaps() {
         return heaps.clone();
     }
 
-    public int getCurrentPlayer() {
+    public int currentPlayer() {
         return currentPlayer;
     }
 
@@ -51,39 +51,39 @@ public class GameState {
         return misere;
     }
 
-    public int getTotalItems() {
+    public int totalItems() {
         int sum = 0;
-        for (int i : heaps) {
+        for (int i : heaps)
             sum += i;
-        }
         return sum;
     }
 
-    public int getNimSum() {
+    /**
+     * Nim-sum = XOR của tất cả các đống.
+     * Định lý Bouton.
+     */
+
+    public int nimSum() {
         int x = 0;
-        for (int i : heaps) {
+        for (int i : heaps)
             x ^= i;
-        }
         return x;
     }
 
     public boolean isTerminal() {
-        return getTotalItems() == 0;
+        return totalItems() == 0;
     }
 
-    public int getWinner() {
+    // Ket thuc van
+    public int winner() {
         if (!isTerminal()) {
-            throw new IllegalStateException("Ván chưa kết thúc");
+            throw new IllegalStateException("Van chua ket thuc");
         }
-        if (misere) {
-            return currentPlayer;
-        } else {
-            return 1 - currentPlayer;
-        }
+        return misere ? currentPlayer : 1 - currentPlayer;
     }
 
-    //lay danh sach tat ca cac nuoc di hop le
-    public List<Move> getLegalMoves() {
+    // lay tat ca nuoc di hop le
+    public List<Move> legalMoves() {
         List<Move> moves = new ArrayList<>();
         for (int i = 0; i < heaps.length; i++) {
             for (int j = 1; j <= heaps[i]; j++) {
@@ -93,36 +93,34 @@ public class GameState {
         return Collections.unmodifiableList(moves);
     }
 
-    // Kiem tra xem nuoc di co hop le ko
     public boolean isLegal(Move m) {
-        return m != null && m.getHeapIndex() < heaps.length && m.getCount() < heaps[m.getHeapIndex()];
+        return m != null
+                && m.heapIndex() < heaps.length
+                && m.count() <= heaps[m.heapIndex()];
     }
 
-    //ap dung nuoc di, tra ve trang thai moi
+    // Ap dung nuoc di, tra ve trang thai moi
     public GameState apply(Move m) {
-        if(!isLegal(m)) {
+        if (!isLegal(m)) {
             throw new IllegalArgumentException("Nước đi không hợp lệ");
         }
-
-        int[] nexHeaps = heaps.clone();
-        nexHeaps[m.getHeapIndex()] -= m.getCount();
-
-        int nextPlayer = 1 - currentPlayer;
-
-        return new GameState(nexHeaps, nextPlayer, misere);
+        int[] next = heaps.clone();
+        next[m.heapIndex()] -= m.count();
+        return new GameState(next, 1 - currentPlayer, misere);
     }
 
-    public String getCanonicalKey() {
+    // key cho cache
+    public String canonicalKey() {
         int[] sorted = heaps.clone();
         Arrays.sort(sorted);
         return Arrays.toString(sorted) + (misere ? "|M" : "|N");
     }
 
-    @Override 
+    @Override
     public String toString() {
         return Arrays.toString(heaps)
                 + " lượt P" + (currentPlayer + 1)
                 + (misere ? " [misère]" : "")
-                + " nim-sum = " + getNimSum();
+                + " nim-sum=" + nimSum();
     }
 }

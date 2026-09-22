@@ -1,26 +1,15 @@
 package nim.core;
 
-public class Move {
-    private final int heapIndex;
-    private final int count;
+public record Move(int heapIndex, int count) {
 
-    public Move(int heapIndex, int count) {
+    public Move {
         if (heapIndex < 0) {
             throw new IllegalArgumentException("heapIndex phải >= 0");
         }
+
         if (count < 1) {
-            throw new IllegalArgumentException("Mỗi bước đi phải bốc ít nhất 1 vật phẩm");
+            throw new IllegalArgumentException("Mỗi nước phải bốc ít nhất 1 vật phẩm");
         }
-        this.heapIndex = heapIndex;
-        this.count = count;
-    }
-
-    public int getHeapIndex() {
-        return heapIndex;
-    }
-
-    public int getCount() {
-        return count;
     }
 
     @Override
