@@ -32,12 +32,16 @@ public final class GameSession {
         return List.copyOf(history);
     }
 
+    /* apply nước đi m */
     public void play(Move m) {
         current = current.apply(m);
         history.add(m);
     }
 
-    /** Lùi lại {@code steps} nước, người vs máy thì lùi 2 */
+    /** 
+     * Lùi lại {@code steps} nước, người vs máy thì lùi 2 
+     * Đang dùng giải thuật lưu nước đi rồi chạy từ đầu để tạo trạng thái undo
+    */
     public boolean undo(int steps) {
         if (steps <= 0 || steps > history.size())
             return false;

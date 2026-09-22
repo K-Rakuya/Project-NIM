@@ -40,7 +40,7 @@ public final class SaveFile {
         // lưu move
         List<Move> moves = session.history();
         sb.append("moves=");
-        for (int i = 0; i < heaps.length; i++) {
+        for (int i = 0; i < moves.size(); i++) {
             if (i > 0)
                 sb.append(',');
             sb.append(moves.get(i).heapIndex()).append(':').append(moves.get(i).count());
