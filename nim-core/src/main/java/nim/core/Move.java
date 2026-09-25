@@ -1,5 +1,10 @@
 package nim.core;
 
+/**
+ * Move
+ * @param heapIndex
+ * @param count
+ */
 public record Move(int heapIndex, int count) {
 
     public Move {

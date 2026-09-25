@@ -17,9 +17,16 @@ public final class StateGenerator {
     }
 
     /**
-     * @param firstPlayerShouldWin TRUE -> thế mở màn là thế thắng
-     *                             FALSE -> thế mở màn là thế thua
-     *                             null -> không ràng buộc
+     * TRUE -> thế mở màn là thế thắng
+     * FALSE -> thế mở màn là thế thua
+     * null -> không ràng buộc
+     * 
+     * @param heapCount
+     * @param minItems
+     * @param maxItems
+     * @param misere
+     * @param firstPlayerShouldWin
+     * @return new GameState
      */
 
     // Sinh ngẫu nhiên bằng phương pháp thử và sai: tạo bàn cờ ngẫu nhiên nếu đúng ý

@@ -6,6 +6,10 @@ import nim.core.GameState;
 import nim.core.Move;
 import nim.core.NimTheory;
 
+/**
+ * Hành vi của AI sử dụng lý thuyết trò chơi NIM
+ * OptimalAi
+ */
 public final class OptimalAi implements AiStrategy {
 
     // mistakeRate: xác suất AI đi nước lỗi
@@ -30,13 +34,33 @@ public final class OptimalAi implements AiStrategy {
         return mistakeRate == 0 ? "Tối ưu" : "Tối ưu với tỉ lệ " + (100 - Math.round(mistakeRate * 100)) + "%";
     }
 
-    @Override 
+    /**
+     * Chọn nước đi tiếp theo dựa trên tỉ lệ cho trước
+     * Fallback về hành vi của RandomAI nếu rơi vào tỉ lệ lỗi
+     * 
+     * @see nim.core.ai.AiStrategy#chooseMove(nim.core.GameState)
+     */
+    @Override
     public Move chooseMove(GameState state) {
-        if (random.nextDouble() < mistakeRate) {
-            return fallback.chooseMove(state);
-        }
+
         Move winning = NimTheory.findingWinningMove(state);
-        // Đang ở thế thua: đi đại
+
+        // Rơi vào tỉ lệ lỗi
+        if (random.nextDouble() < mistakeRate) {
+            // return fallback.chooseMove(state);
+
+            // Code mới để đảm bảo tỉ lệ không lệch do fallback về chọn random
+            if (winning != null && state.legalMoves().size() > 1) {
+                Move randomMove;
+                do {
+                    randomMove = fallback.chooseMove(state);
+                } while (randomMove.equals(winning));
+
+                return randomMove;
+            }
+        }
+
+        // Chơi nghiêm túc, đang ở thế thua, còn 1 nước đi
         return winning != null ? winning : fallback.chooseMove(state);
     }
 }

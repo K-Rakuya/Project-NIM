@@ -16,13 +16,22 @@ import java.util.List;
  * moves=0:2,1:3
  */
 
+/**
+ * SaveFile
+ */
 public final class SaveFile {
 
     private SaveFile() {
     }
 
-    //save session
+    /**
+     * Save session game dưới dạng String vào một file
+     * @param session
+     * @param file
+     * @throws IOException
+     */
     public static void save(GameSession session, Path file) throws IOException {
+        // Tạo đối tượng StringBuilder do chuỗi hay thay đổi
         StringBuilder sb = new StringBuilder();
         sb.append("nim-save 1\n");
         sb.append("misere=").append(session.initialState().isMisere()).append('\n');
@@ -47,6 +56,7 @@ public final class SaveFile {
         }
         sb.append('\n');
 
+        // Check thư mục cha chưa tồn tại thì tạo luôn tránh gây lỗi
         if (file.getParent() != null)
             Files.createDirectories(file.getParent());
         Files.writeString(file, sb.toString(), StandardCharsets.UTF_8);
@@ -58,11 +68,12 @@ public final class SaveFile {
         if(lines.isEmpty() || !lines.get(0).startsWith("nim-save 1"))
             throw new IOException("File không hợp lệ");
 
-        //cắt string từng dòng
+        
         boolean misere = false;
         int[] initial = null;
         String movesLine = "";
-
+        
+        //cắt string từng dòng
         for (String line : lines.subList(1, lines.size())) {
             int eq = line.indexOf('=');
             if (eq < 0) continue;

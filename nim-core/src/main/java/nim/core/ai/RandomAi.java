@@ -6,6 +6,10 @@ import java.util.Random;
 import nim.core.GameState;
 import nim.core.Move;
 
+/**
+ * Lớp cung cấp hành vi của RandomAi
+ * RandomAi
+ */
 public final class RandomAi implements AiStrategy {
 
     private final Random random;
@@ -23,6 +27,10 @@ public final class RandomAi implements AiStrategy {
         return "Random";
     }
 
+    /**
+     * Chọn random nước đi trong các nước đi khả dụng ở lượt này
+     * @see nim.core.ai.AiStrategy#chooseMove(nim.core.GameState)
+     */
     @Override
     public Move chooseMove(GameState state) {
         List<Move> moves = state.legalMoves();

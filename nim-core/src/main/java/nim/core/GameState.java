@@ -5,10 +5,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * 
+ * GameState
+ */
 public final class GameState {
     private final int[] heaps;
     private final int currentPlayer; // 0 hoac 1, player 0 di truoc
-    private final boolean misere; // true = ai boc que cuoi cung thi thua
+    private final boolean misere; // true = ai boc item cuoi cung thi thua
 
     public GameState(int[] heaps, int currentPlayer, boolean misere) {
         if (heaps == null || heaps.length == 0) {
@@ -62,7 +66,6 @@ public final class GameState {
      * Nim-sum = XOR của tất cả các đống.
      * Định lý Bouton.
      */
-
     public int nimSum() {
         int x = 0;
         for (int i : heaps)
@@ -70,12 +73,17 @@ public final class GameState {
         return x;
     }
 
+    /**
+     * Kiểm tra ván đã kết thúc chưa
+     * @return
+     */
     public boolean isTerminal() {
         return totalItems() == 0;
     }
 
     /**
-     * ket thuc van
+     * Trả về index người chiến thắng
+     * @return
      */
     public int winner() {
         if (!isTerminal()) {
@@ -85,7 +93,8 @@ public final class GameState {
     }
 
     /**
-     * lay tat ca nuoc di hop le
+     * lấy tất cả các nước đi hợp lệ có thể có trong lượt này
+     * @return Collections.unmodifiableList(moves)
      */
     public List<Move> legalMoves() {
         List<Move> moves = new ArrayList<>();
@@ -97,6 +106,12 @@ public final class GameState {
         return Collections.unmodifiableList(moves);
     }
 
+
+    /**
+     * Kiểm tra một nước đi có hợp lệ
+     * @param m
+     * @return boolean
+     */
     public boolean isLegal(Move m) {
         return m != null
                 && m.heapIndex() < heaps.length
@@ -104,7 +119,9 @@ public final class GameState {
     }
 
     /**
-     * Áp dụng nước đi, trả về trạng thái mới
+     * Áp dụng nước đi m
+     * @param m
+     * @return new GameState
      */
     public GameState apply(Move m) {
         if (!isLegal(m)) {
@@ -116,7 +133,8 @@ public final class GameState {
     }
 
     /**
-     * key cho việc cache lại trạng thái để dễ tìm kiếm
+     * Generate key cho việc cache lại trạng thái dùng trong các giải thuật vét cạn
+     * @return Arrays.toString(sorted) + (misere ? "|M" : "|N")
      */
     public String canonicalKey() {
         int[] sorted = heaps.clone();

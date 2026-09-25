@@ -12,6 +12,7 @@ import nim.core.NimTheory;
 import nim.core.SaveFile;
 import nim.core.StateGenerator;
 import nim.core.ai.AiStrategy;
+import nim.core.ai.MinimaxAi;
 import nim.core.ai.OptimalAi;
 import nim.core.ai.RandomAi;
 
@@ -93,6 +94,9 @@ public class Main {
             if (ai != null && s.currentPlayer() == 1) {
                 Move m = ai.chooseMove(s);
                 System.out.println("  Máy đi: " + m);
+                if (ai instanceof MinimaxAi mm) {
+                    System.out.println("  [debug] Minimax duyệt " + mm.lastNodesVisited() + " nút để chọn nước này");
+                }
                 session.play(m);
                 continue;
             }
@@ -104,10 +108,10 @@ public class Main {
             if (line.equalsIgnoreCase("quit"))
                 return;
             if (line.equalsIgnoreCase("hint")) {
-                Move hint =  NimTheory.findingWinningMove(s);
+                Move hint = NimTheory.findingWinningMove(s);
                 System.out.println(hint == null
                         ? "  Gợi ý: Không cứu nổi"
-                        : "  Gợi ý: " + hint );
+                        : "  Gợi ý: " + hint);
                 continue;
             }
 
@@ -155,8 +159,8 @@ public class Main {
         }
 
         System.out.println("-------------------------------------------");
-        System.out.printf("  [Debug] Nim-sum: %d | Luật: %s%n", 
-                s.nimSum(), 
+        System.out.printf("  [Debug] Nim-sum: %d | Luật: %s%n",
+                s.nimSum(),
                 s.isMisere() ? "Misère" : "Thường");
 
         if (!s.isTerminal()) {
@@ -190,12 +194,13 @@ public class Main {
     }
 
     private static AiStrategy askAiLevel() {
-        System.out.println("Mức máy:  1 = Dễ (ngẫu nhiên)   2 = Vừa (sai 30%)   3 = Khó (tối ưu)");
+        System.out.println("Mức máy:  1 = Dễ (ngẫu nhiên)   2 = Vừa (sai 30%)   3 = Khó (tối ưu)   4 = Minimax (duyệt cây)");
         System.out.print("Chọn: ");
         return switch (IN.nextLine().trim()) {
             case "1" -> new RandomAi(RND);
             case "2" -> new OptimalAi(0.30, RND);
-            default  -> new OptimalAi(0.0, RND);
+            case "4" -> new MinimaxAi();
+            default -> new OptimalAi(0.0, RND);
         };
     }
 }

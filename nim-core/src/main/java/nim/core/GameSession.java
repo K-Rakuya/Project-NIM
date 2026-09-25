@@ -40,7 +40,7 @@ public final class GameSession {
 
     /** 
      * Lùi lại {@code steps} nước, người vs máy thì lùi 2 
-     * Đang dùng giải thuật lưu nước đi rồi chạy từ đầu để tạo trạng thái undo
+     * Đang dùng giải thuật lưu lịch sử nước đi rồi chạy từ đầu để tạo trạng thái undo
     */
     public boolean undo(int steps) {
         if (steps <= 0 || steps > history.size())

@@ -1,7 +1,8 @@
 package nim.core;
 
 /**
- * Định lý Bouton cho NIM thường và misère.
+ * Định lý Bouton cho NIM thường và misère
+ * NimTheory
  */
 public final class NimTheory {
 
@@ -10,6 +11,8 @@ public final class NimTheory {
 
     /**
      * Đếm số lượng đống có 1 item
+     * @param s
+     * @return number
      */
     private static int countOnes(GameState s) {
         int n = 0;
@@ -22,6 +25,8 @@ public final class NimTheory {
 
     /**
      * Đếm số lượng đống có ít nhất 2 item
+     * @param s
+     * @return number
      */
     private static int countBigHeaps(GameState s) {
         int n = 0;
@@ -34,6 +39,8 @@ public final class NimTheory {
 
     /**
      * Tìm đống lớn đầu tiên
+     * @param s
+     * @return index của đống lớn đầu tiên tìm được
      */
     private static int firstBigHeaps(GameState s) {
         for (int i = 0; i < s.heapCount(); i++)
@@ -44,17 +51,22 @@ public final class NimTheory {
     }
 
     /**
-     * Người ĐANG đến lượt có thua không, với giả thiết hai bên chơi tối ưu?
+     * Người đang đến lượt có thua không, với giả thiết hai bên chơi tối ưu?
      *
      * Luật thường (định lý Bouton): thua <=> nim-sum == 0.
-     * Bổ đề 1: từ thế nim-sum != 0 luôn tồn tại nước đi đưa về nim-sum == 0.
-     * Bổ đề 2: từ thế nim-sum == 0, mọi nước đi đều làm nim-sum != 0.
+     * 1: từ thế nim-sum != 0 luôn tồn tại nước đi đưa về nim-sum == 0.
+     * 2: từ thế nim-sum == 0, mọi nước đi đều làm nim-sum != 0.
      *
      * Luật misère: chừng nào còn ít nhất một đống >= 2 ite,, chiến lược giống
      * luật thường. Khi mọi đống chỉ còn 0 hoặc 1 item, thế cờ đảo ngược:
      * thua <=> số đống 1-item là lẻ.
      */
 
+    /**
+     * Tính toán thế ván hiện tại thắng hay thua
+     * @param s
+     * @return boolean
+     */
     public static boolean isLosingForCurrentPlayer(GameState s) {
         if (s.isMisere() && countBigHeaps(s) == 0) {
             return countOnes(s) % 2 == 1;
@@ -64,6 +76,7 @@ public final class NimTheory {
 
     /**
      * Trả về một nước đi thắng, hoặc null nếu đang ở thế thua / ván đã hết.
+     * @return Move
      */
     public static Move findingWinningMove(GameState s) {
         if (s.isTerminal() || isLosingForCurrentPlayer(s)) {
@@ -73,9 +86,9 @@ public final class NimTheory {
         if (s.isMisere()) {
             int big = countBigHeaps(s);
 
-            // Mọi đống đều <= 1 item, và số đống 1-item đang CHẴN (vì giả định đang ở thế
+            // Mọi đống đều <= 1 item, và số đống 1-item đang chẵn (vì giả định đang ở thế
             // thắng).
-            // Bốc 1 item để đối thủ nhận số LẺ đống 1-item.
+            // Bốc 1 item để đối thủ nhận số lẻ đống 1-item.
             if (big == 0) {
                 for (int i = 0; i < s.heapCount(); i++) {
                     if (s.heap(i) == 1)
