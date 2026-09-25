@@ -73,11 +73,10 @@ cd Project-NIM
 Bộ test bao gồm:
 - Đối chiếu `NimTheory` với kết quả duyệt vét cạn trên tập thế cờ nhỏ
 - Đối chiếu `MinimaxAi` với `NimTheory`, và với chính nó khi bật/tắt cắt tỉa alpha-beta
-- Tự đấu AI vs AI để kiểm tra tính nhất quán giữa các chiến lược
 
 ## Cách chơi (client console)
 
-1. Chọn chế độ: Người vs Máy, Người vs Người, hoặc Tải ván đã lưu
+1. Chọn chế độ: người vs máy, người vs người, hoặc tải ván đã lưu
 2. Nhập nước đi theo cú pháp `<số đống> <số items>` — ví dụ `2 3` nghĩa là bốc 3 items ở đống 2
 3. Lệnh phụ: `hint` (gợi ý nước đi), `undo` (lùi nước), `save <file>` (lưu ván), `quit` (thoát)
 
