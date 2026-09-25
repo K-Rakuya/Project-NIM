@@ -66,12 +66,29 @@ public class Main {
     }
 
     private static void loadGame() {
-        System.out.print("Đường dẫn file ván: ");
-        Path path = Path.of(IN.nextLine().trim());
+        System.out.print("Đường dẫn file ván: (Enter để dùng đường dẫn mặc định)");
+        String input = IN.nextLine().trim(); //Lấy chuỗi người dùng
+        if (input.isEmpty()) {
+            input = "saves/latest.nim"; //Đường dẫn mặc định
+        }
+
+        Path path = Path.of(input);
         try {
             GameSession session = SaveFile.load(path);
-            System.out.println("Đã tải ván. Tiếp tục ở chế độ Người vs Người.");
-            run(session, null);
+
+            // Hỏi người dùng xem muốn tiếp tục chơi với ai
+            System.out.print("Bạn muốn người chơi 2 (đối thủ) là Máy không? [y/N]: ");
+            boolean playWithAi = IN.nextLine().trim().equalsIgnoreCase("y");
+
+            AiStrategy ai = null;
+            if (playWithAi) {
+                ai = askAiLevel(); 
+                System.out.println("Đã thiết lập Máy (" + ai.name() + "). Tiếp tục ván đấu...");
+            } else {
+                System.out.println("Tiếp tục ván đấu ở chế độ Người vs Người...");
+            }
+
+            run(session, ai);
         } catch (IOException | RuntimeException e) {
             System.out.println("Không tải được: " + e.getMessage());
         }
