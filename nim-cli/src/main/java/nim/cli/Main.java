@@ -5,19 +5,20 @@ import java.nio.file.Path;
 import java.util.Random;
 import java.util.Scanner;
 
+import nim.core.GameConfig;
+import nim.core.GameConfig.Mode;
+import nim.core.GameConfig.Opening;
 import nim.core.GameSession;
+import nim.core.Match;
 import nim.core.GameState;
 import nim.core.Move;
-import nim.core.NimTheory;
 import nim.core.SaveFile;
 import nim.core.StateGenerator;
 import nim.core.ai.AiStrategy;
 import nim.core.ai.MinimaxAi;
-import nim.core.ai.OptimalAi;
-import nim.core.ai.RandomAi;
+import nim.core.ai.AiLevel;
 
 public class Main {
-
     private static final Scanner IN = new Scanner(System.in);
     private static final Random RND = new Random();
 
@@ -48,73 +49,67 @@ public class Main {
         }
     }
 
-    // ---------- khởi tạo ván ----------
-
     private static void playVsAi() {
         boolean misere = askMisere();
-        AiStrategy ai = askAiLevel();
+        AiStrategy ai = askAiStrategy();
 
-        // thế thắng cho người đi trước
+        GameConfig cfg = new GameConfig(Mode.VS_AI, misere, 3, 9, Opening.FIRST_WINS, AiLevel.HARD, 0);
         GameState start = new StateGenerator(RND).random(3, 1, 9, misere, Boolean.TRUE);
-        run(new GameSession(start), ai);
+        run(Match.resume(cfg, new GameSession(start), ai));
     }
 
     private static void playVsHuman() {
-        boolean misere = askMisere();
-        GameState start = new StateGenerator(RND).random(3, 1, 9, misere, null);
-        run(new GameSession(start), null);
+        GameConfig cfg = GameConfig.defaults().withMode(Mode.VS_HUMAN).withMisere(askMisere());
+        run(Match.start(cfg.withHeapCount(3).withMaxItems(9), RND));
     }
 
     private static void loadGame() {
         System.out.print("Đường dẫn file ván: (Enter để dùng đường dẫn mặc định)");
-        String input = IN.nextLine().trim(); //Lấy chuỗi người dùng
+        String input = IN.nextLine().trim();
         if (input.isEmpty()) {
-            input = "saves/latest.nim"; //Đường dẫn mặc định
+            input = "saves/latest.nim";
         }
 
-        Path path = Path.of(input);
         try {
-            GameSession session = SaveFile.load(path);
+            Match loaded = SaveFile.loadMatch(Path.of(input), RND);
 
-            // Hỏi người dùng xem muốn tiếp tục chơi với ai
-            System.out.print("Bạn muốn người chơi 2 (đối thủ) là Máy không? [y/N]: ");
-            boolean playWithAi = IN.nextLine().trim().equalsIgnoreCase("y");
-
-            AiStrategy ai = null;
-            if (playWithAi) {
-                ai = askAiLevel(); 
-                System.out.println("Đã thiết lập Máy (" + ai.name() + "). Tiếp tục ván đấu...");
-            } else {
-                System.out.println("Tiếp tục ván đấu ở chế độ Người vs Người...");
+            if (loaded.config().mode() == Mode.VS_HUMAN) {
+                System.out.print("Bạn muốn người chơi 2 (đối thủ) là Máy không? [y/N]: ");
+                if (IN.nextLine().trim().equalsIgnoreCase("y")) {
+                    AiStrategy ai = askAiStrategy();
+                    loaded = Match.resume(loaded.config().withMode(Mode.VS_AI).withHumanSeat(0),
+                            loaded.session(), ai);
+                    System.out.println("Đã thiết lập Máy (" + ai.name() + "). Tiếp tục ván đấu...");
+                } else {
+                    System.out.println("Tiếp tục ván đấu ở chế độ Người vs Người...");
+                }
             }
-
-            run(session, ai);
+            run(loaded);
         } catch (IOException | RuntimeException e) {
             System.out.println("Không tải được: " + e.getMessage());
         }
     }
 
-    // ---------- vòng lặp chính ----------
+    private static String seatName(Match match, int seat) {
+        return match.isAiSeat(seat) ? "Máy" : "Người chơi " + (seat + 1);
+    }
 
-    private static void run(GameSession session, AiStrategy ai) {
+    private static void run(Match match) {
         while (true) {
-            GameState s = session.state();
-            printBoard(s, ai);
+            GameState s = match.state();
+            printBoard(match);
 
-            if (s.isTerminal()) {
-                int w = s.winner();
-                String name = (ai != null && w == 1) ? "Máy" : "Người chơi " + (w + 1);
-                System.out.println("\n>>> " + name + " thắng!\n");
+            if (match.isOver()) {
+                System.out.println("\n>>> " + seatName(match, match.winner()) + " thắng!\n");
                 return;
             }
 
-            if (ai != null && s.currentPlayer() == 1) {
-                Move m = ai.chooseMove(s);
+            if (match.isAiTurn()) {
+                Move m = match.playAi();
                 System.out.println("  Máy đi: " + m);
-                if (ai instanceof MinimaxAi mm) {
+                if (match.ai() instanceof MinimaxAi mm) {
                     System.out.println("  [debug] Minimax duyệt " + mm.lastNodesVisited() + " nút để chọn nước này");
                 }
-                session.play(m);
                 continue;
             }
 
@@ -125,16 +120,14 @@ public class Main {
             if (line.equalsIgnoreCase("quit"))
                 return;
             if (line.equalsIgnoreCase("hint")) {
-                Move hint = NimTheory.findingWinningMove(s);
-                System.out.println(hint == null
-                        ? "  Gợi ý: Không cứu nổi"
-                        : "  Gợi ý: " + hint);
+                System.out.println(match.hint()
+                        .map(h -> "  Gợi ý: " + h)
+                        .orElse("  Gợi ý: Không cứu nổi"));
                 continue;
             }
 
             if (line.equalsIgnoreCase("undo")) {
-                int steps = (ai != null) ? 2 : 1;
-                System.out.println(session.undo(steps) ? "  Đã lùi lại." : "  Không lùi được nữa.");
+                System.out.println(match.undo() ? "  Đã lùi lại." : "  Không lùi được nữa.");
                 continue;
             }
 
@@ -142,7 +135,7 @@ public class Main {
                 String[] parts = line.split("\\s+", 2);
                 String target = (parts.length == 2) ? parts[1].trim() : "saves/latest.nim";
                 try {
-                    SaveFile.save(session, Path.of(target));
+                    SaveFile.save(match, Path.of(target));
                 } catch (IOException e) {
                     System.out.println("  Lưu thất bại: " + e.getMessage());
                 }
@@ -158,14 +151,13 @@ public class Main {
                 System.out.println("  Nước đi không hợp lệ.");
                 continue;
             }
-            session.play(m);
+            match.play(m);
         }
     }
 
-    // ---------- hiển thị và nhập liệu ----------
+    private static void printBoard(Match match) {
+        GameState s = match.state();
 
-    private static void printBoard(GameState s, AiStrategy ai) {
-        // In vài dòng trống để tạo cảm giác "làm mới" màn hình console
         System.out.println("\n".repeat(2));
         System.out.println("┌─────────────────────────────────────────┐");
         System.out.println("│            TRẠNG THÁI BÀN CỜ            │");
@@ -181,15 +173,14 @@ public class Main {
                 s.isMisere() ? "Misère" : "Thường");
 
         if (!s.isTerminal()) {
-            String who = (ai != null && s.currentPlayer() == 1)
-                    ? "Máy (" + ai.name() + ")"
-                    : "Người chơi " + (s.currentPlayer() + 1);
+            String who = match.isAiSeat(s.currentPlayer())
+                    ? "Máy (" + match.aiName() + ")"
+                    : seatName(match, s.currentPlayer());
             System.out.println("  Lượt đi: " + who);
         }
         System.out.println("===========================================");
     }
 
-    /* Chuyển chuỗi thành Move */
     private static Move parseMove(String line) {
         String[] parts = line.split("\\s+");
         if (parts.length != 2)
@@ -210,14 +201,14 @@ public class Main {
         return IN.nextLine().trim().equalsIgnoreCase("y");
     }
 
-    private static AiStrategy askAiLevel() {
+    private static AiStrategy askAiStrategy() {
         System.out.println("Mức máy:  1 = Dễ (ngẫu nhiên)   2 = Vừa (sai 30%)   3 = Khó (tối ưu)   4 = Minimax (duyệt cây)");
         System.out.print("Chọn: ");
         return switch (IN.nextLine().trim()) {
-            case "1" -> new RandomAi(RND);
-            case "2" -> new OptimalAi(0.30, RND);
+            case "1" -> AiLevel.EASY.create(RND);
+            case "2" -> AiLevel.MEDIUM.create(RND);
             case "4" -> new MinimaxAi();
-            default -> new OptimalAi(0.0, RND);
+            default -> AiLevel.HARD.create(RND);
         };
     }
 }

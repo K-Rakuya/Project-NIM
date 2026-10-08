@@ -11,38 +11,22 @@ import java.util.Random;
 
 import nim.core.ai.AiLevel;
 
-/**
- * Định dạng văn bản phiên bản 1, không phụ thuộc thư viện ngoài.
- * Sang giai đoạn client-server sẽ thay bằng JSON.
- *
- * nim-save 1
- * misere=false
- * initial=3,5,7
- * moves=0:2,1:3
- */
-
-/**
- * SaveFile
+/*
+ * Định dạng văn bản:
+ *   nim-save 1
+ *   misere=false
+ *   initial=3,5,7
+ *   moves=0:2,1:3
+ * Chỉ lưu thế ban đầu và danh sách nước đi; trạng thái hiện tại được dựng lại bằng cách chơi lại.
  */
 public final class SaveFile {
-
     private SaveFile() {
     }
 
-    /**
-     * Save session game dưới dạng String vào một file
-     * @param session
-     * @param file
-     * @throws IOException
-     */
     public static void save(GameSession session, Path file) throws IOException {
         write(session, "", file);
     }
 
-    /**
-     * Lưu cả thông tin cấu hình (chế độ, mức máy, ghế người chơi) dưới dạng các
-     * khóa phụ. Header vẫn là {@code nim-save 1} và các khóa lạ
-     */
     public static void save(Match match, Path file) throws IOException {
         GameConfig c = match.config();
         String extras = "mode=" + c.mode().name() + "\n"
@@ -52,12 +36,10 @@ public final class SaveFile {
     }
 
     private static void write(GameSession session, String extras, Path file) throws IOException {
-        // Tạo đối tượng StringBuilder do chuỗi hay thay đổi
         StringBuilder sb = new StringBuilder();
         sb.append("nim-save 1\n");
         sb.append("misere=").append(session.initialState().isMisere()).append('\n');
 
-        /// lưu heaps
         int[] heaps = session.initialState().heaps();
         sb.append("initial=");
         for (int i = 0; i < heaps.length; i++) {
@@ -67,7 +49,6 @@ public final class SaveFile {
         }
         sb.append('\n');
 
-        // lưu move
         List<Move> moves = session.history();
         sb.append("moves=");
         for (int i = 0; i < moves.size(); i++) {
@@ -78,18 +59,15 @@ public final class SaveFile {
         sb.append('\n');
         sb.append(extras);
 
-        // Check thư mục cha chưa tồn tại thì tạo luôn tránh gây lỗi
         if (file.getParent() != null)
             Files.createDirectories(file.getParent());
         Files.writeString(file, sb.toString(), StandardCharsets.UTF_8);
     }
 
-    //load session
     public static GameSession load(Path file) throws IOException {
         return parse(file).session();
     }
 
-    /** Tải ván kèm cấu hình; thiếu khóa phụ được hiểu là người vs người. */
     public static Match loadMatch(Path file, Random random) throws IOException {
         Parsed p = parse(file);
         GameConfig.Mode mode = GameConfig.Mode.VS_HUMAN;
@@ -127,13 +105,10 @@ public final class SaveFile {
         if(lines.isEmpty() || !lines.get(0).startsWith("nim-save 1"))
             throw new IOException("File không hợp lệ");
 
-        
         boolean misere = false;
         int[] initial = null;
         String movesLine = "";
         Map<String, String> extras = new HashMap<>();
-        
-        //cắt string từng dòng
         for (String line : lines.subList(1, lines.size())) {
             int eq = line.indexOf('=');
             if (eq < 0) continue;
@@ -147,10 +122,8 @@ public final class SaveFile {
             }
         }
 
-        // quăng lỗi do null ko thể làm giá trị mặc định như các biến khác
         if (initial == null) throw new IOException("File thiếu dòng initial=");
 
-        //cắt string lấy move
         GameSession session = new GameSession(new GameState(initial, 0, misere));
         if (!movesLine.isEmpty()) {
             for (String token : movesLine.split(",")) {
@@ -159,11 +132,9 @@ public final class SaveFile {
                 session.play(new Move(Integer.parseInt(p[0].trim()), Integer.parseInt(p[1].trim())));
             }
         }
-        
         return new Parsed(session, extras);
     }
 
-    // ParseInt nè
     private static int[] parseInts(String csv) {
         String[] parts = csv.split(",");
         int[] out = new int[parts.length];

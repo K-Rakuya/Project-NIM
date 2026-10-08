@@ -6,11 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-/**
- * GameStateTest
- */
 public class GameStateTest {
-
     @Test
     void nimSumLaXorCuaCacDong() {
         assertEquals(3 ^ 5 ^ 7, GameState.of(false, 3, 5, 7).nimSum());

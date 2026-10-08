@@ -11,17 +11,10 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-/**
- * NimTheoryTest
- */
 public class NimTheoryTest {
-    /** Duyệt vét cạn: người đến lượt có chắc chắn thua? */
     private boolean bruteForceLosing(GameState s, Map<String, Boolean> memo) {
         List<Move> moves = s.legalMoves();
         if (moves.isEmpty()) {
-            // Hết item. Người vừa đi đã bốc item cuối.
-            // Luật thường: người đó thắng
-            // Luật misère: người đó thua
             return !s.isMisere();
         }
 

@@ -3,14 +3,7 @@ package nim.core;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Phiên chơi và lưu ván
- * Một ván đang diễn ra: trạng thái ban đầu + lịch sử nước đi.
- * Giữ lịch sử cho phép undo và replay.
- */
-
 public final class GameSession {
-
     private final GameState initial;
     private final List<Move> history = new ArrayList<>();
     private GameState current;
@@ -32,16 +25,11 @@ public final class GameSession {
         return List.copyOf(history);
     }
 
-    /* apply nước đi m */
     public void play(Move m) {
         current = current.apply(m);
         history.add(m);
     }
 
-    /** 
-     * Lùi lại {@code steps} nước, người vs máy thì lùi 2 
-     * Đang dùng giải thuật lưu lịch sử nước đi rồi chạy từ đầu để tạo trạng thái undo
-    */
     public boolean undo(int steps) {
         if (steps <= 0 || steps > history.size())
             return false;
@@ -54,6 +42,4 @@ public final class GameSession {
         current = s;
         return true;
     }
-
-    //Sau này đổi sang cơ chế đảo ngược nước đi để tối ưu giải thuật
 }

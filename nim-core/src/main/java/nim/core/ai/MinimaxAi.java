@@ -6,7 +6,6 @@ import nim.core.GameState;
 import nim.core.Move;
 
 public final class MinimaxAi implements AiStrategy {
-
     private final boolean useAlphaBeta;
     private long nodesVisited;
 
@@ -23,11 +22,6 @@ public final class MinimaxAi implements AiStrategy {
         return useAlphaBeta ? "Minimax | alpha-beta" : "Minimax";
     }
 
-    /**
-     * Số nút đã duyệt ở lần gần nhất
-     * 
-     * @return
-     */
     public long lastNodesVisited() {
         return nodesVisited;
     }
@@ -47,7 +41,7 @@ public final class MinimaxAi implements AiStrategy {
         nodesVisited = 0;
         Move bestMove = null;
         int bestValue = Integer.MIN_VALUE;
-        int alpha = -2, beta = 2; //đại diện cho các giá trị vô cực
+        int alpha = -2, beta = 2;
 
         for (Move m : moves) {
             int value = -negamax(state.apply(m), -beta, -alpha);
@@ -64,17 +58,16 @@ public final class MinimaxAi implements AiStrategy {
         return bestMove;
     }
 
-    /**
-     * Dùng negamax thay cho minimax để tối ưu tính tái sử dụng code
-     * @param s
-     * @param alpha
-     * @param beta
-     * @return
+    /*
+     * Negamax: trò chơi tổng bằng 0 nên max(a, b) = -min(-a, -b), dùng một hàm cho cả hai bên.
+     * Giá trị +1 / -1 là thắng / thua cho người đến lượt, khoảng (-2, 2) đóng vai trò vô cực.
+     * Cắt tỉa alpha-beta bỏ nhánh khi alpha >= beta vì đối thủ sẽ không để ván vào nhánh đó.
      */
     private int negamax(GameState s, int alpha, int beta) {
         nodesVisited++;
 
         if (s.isTerminal()) {
+            // Đối thủ vừa bốc item cuối: người đến lượt thua (luật thường) hoặc thắng (misère).
             return s.isMisere() ? 1 : -1;
         }
 

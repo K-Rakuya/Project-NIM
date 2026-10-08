@@ -2,20 +2,8 @@ package nim.core;
 
 import nim.core.ai.AiLevel;
 
-/**
- * Cấu hình một ván mới.
- *
- * @param mode       người vs máy hoặc người vs người
- * @param misere     true = ai bốc item cuối cùng thì thua
- * @param heapCount  số đống (1..8)
- * @param maxItems   số item tối đa mỗi đống (mỗi đống có ít nhất 1)
- * @param opening    ràng buộc thế mở màn đối với người đi trước
- * @param level      mức độ máy
- * @param humanSeat  ghế của người chơi trong chế độ người vs máy (0 = đi trước)
- */
 public record GameConfig(Mode mode, boolean misere, int heapCount, int maxItems,
         Opening opening, AiLevel level, int humanSeat) {
-
     public enum Mode {
         VS_AI("Người vs Máy"), VS_HUMAN("Người vs Người");
 
@@ -32,8 +20,8 @@ public record GameConfig(Mode mode, boolean misere, int heapCount, int maxItems,
 
     public enum Opening {
         RANDOM("Ngẫu nhiên", null),
-        FIRST_WINS("Người đi trước có lợi", Boolean.TRUE),
-        FIRST_LOSES("Người đi trước bất lợi", Boolean.FALSE);
+        FIRST_WINS("Đi trước có lợi", Boolean.TRUE),
+        FIRST_LOSES("Đi trước bất lợi", Boolean.FALSE);
 
         private final String label;
         private final Boolean firstPlayerShouldWin;
@@ -47,7 +35,6 @@ public record GameConfig(Mode mode, boolean misere, int heapCount, int maxItems,
             return label;
         }
 
-        /** Giá trị truyền cho {@link StateGenerator#random}. */
         public Boolean firstPlayerShouldWin() {
             return firstPlayerShouldWin;
         }

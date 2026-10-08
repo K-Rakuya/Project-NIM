@@ -5,14 +5,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * 
- * GameState
- */
 public final class GameState {
     private final int[] heaps;
-    private final int currentPlayer; // 0 hoac 1, player 0 di truoc
-    private final boolean misere; // true = ai boc item cuoi cung thi thua
+    private final int currentPlayer;
+    private final boolean misere;
 
     public GameState(int[] heaps, int currentPlayer, boolean misere) {
         if (heaps == null || heaps.length == 0) {
@@ -30,7 +26,6 @@ public final class GameState {
         this.misere = misere;
     }
 
-    // Init game
     public static GameState of(boolean misere, int... heaps) {
         return new GameState(heaps, 0, misere);
     }
@@ -62,10 +57,7 @@ public final class GameState {
         return sum;
     }
 
-    /**
-     * Nim-sum = XOR của tất cả các đống.
-     * Định lý Bouton.
-     */
+    // Nim-sum = XOR các đống (Bouton).
     public int nimSum() {
         int x = 0;
         for (int i : heaps)
@@ -73,18 +65,11 @@ public final class GameState {
         return x;
     }
 
-    /**
-     * Kiểm tra ván đã kết thúc chưa
-     * @return
-     */
     public boolean isTerminal() {
         return totalItems() == 0;
     }
 
-    /**
-     * Trả về index người chiến thắng
-     * @return
-     */
+    // Luật thường: người bốc item cuối thắng; misère: người đó thua.
     public int winner() {
         if (!isTerminal()) {
             throw new IllegalStateException("Van chua ket thuc");
@@ -92,10 +77,6 @@ public final class GameState {
         return misere ? currentPlayer : 1 - currentPlayer;
     }
 
-    /**
-     * lấy tất cả các nước đi hợp lệ có thể có trong lượt này
-     * @return Collections.unmodifiableList(moves)
-     */
     public List<Move> legalMoves() {
         List<Move> moves = new ArrayList<>();
         for (int i = 0; i < heaps.length; i++) {
@@ -106,23 +87,12 @@ public final class GameState {
         return Collections.unmodifiableList(moves);
     }
 
-
-    /**
-     * Kiểm tra một nước đi có hợp lệ
-     * @param m
-     * @return boolean
-     */
     public boolean isLegal(Move m) {
         return m != null
                 && m.heapIndex() < heaps.length
                 && m.count() <= heaps[m.heapIndex()];
     }
 
-    /**
-     * Áp dụng nước đi m
-     * @param m
-     * @return new GameState
-     */
     public GameState apply(Move m) {
         if (!isLegal(m)) {
             throw new IllegalArgumentException("Nước đi không hợp lệ");
@@ -132,10 +102,7 @@ public final class GameState {
         return new GameState(next, 1 - currentPlayer, misere);
     }
 
-    /**
-     * Generate key cho việc cache lại trạng thái dùng trong các giải thuật vét cạn
-     * @return Arrays.toString(sorted) + (misere ? "|M" : "|N")
-     */
+    // Các đống hoán vị nhau là tương đương nên chuẩn hóa bằng sắp xếp, thu nhỏ không gian trạng thái khi vét cạn.
     public String canonicalKey() {
         int[] sorted = heaps.clone();
         Arrays.sort(sorted);

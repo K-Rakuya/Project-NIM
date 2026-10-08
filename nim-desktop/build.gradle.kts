@@ -12,8 +12,6 @@ javafx {
     modules = listOf("javafx.controls")
 }
 
-
-// goi launcher tranh loi ve classpath va modulepath khi ke thua tha?ng tu application
 application {
     mainClass.set("nim.desktop.Launcher")
 }

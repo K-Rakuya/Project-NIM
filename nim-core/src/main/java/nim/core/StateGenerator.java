@@ -3,7 +3,6 @@ package nim.core;
 import java.util.Random;
 
 public final class StateGenerator {
-
     private static final int MAX_ATTEMPTS = 2000;
 
     private final Random random;
@@ -16,21 +15,6 @@ public final class StateGenerator {
         this(new Random());
     }
 
-    /**
-     * TRUE -> thế mở màn là thế thắng
-     * FALSE -> thế mở màn là thế thua
-     * null -> không ràng buộc
-     * 
-     * @param heapCount
-     * @param minItems
-     * @param maxItems
-     * @param misere
-     * @param firstPlayerShouldWin
-     * @return new GameState
-     */
-
-    // Sinh ngẫu nhiên bằng phương pháp thử và sai: tạo bàn cờ ngẫu nhiên nếu đúng ý
-    // thì lấy ko thì thôi
     public GameState random(int heapCount, int minItems, int maxItems, boolean misere, Boolean firstPlayerShouldWin) {
         if (heapCount < 1)
             throw new IllegalArgumentException("ít nhất 1 đống");
@@ -39,6 +23,8 @@ public final class StateGenerator {
         if (maxItems < minItems)
             throw new IllegalArgumentException("maxItems < minItems");
 
+        // Lấy mẫu loại bỏ: các lần thử độc lập nên số lần thử kỳ vọng là 1/p (p = xác suất thế thỏa ràng buộc);
+        // MAX_ATTEMPTS chặn vòng lặp vô hạn khi p = 0.
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             int[] heaps = new int[heapCount];
             for (int i = 0; i < heapCount; i++) {
@@ -53,6 +39,4 @@ public final class StateGenerator {
         }
         throw new IllegalStateException("Không sinh được thế cờ thỏa ràng buộc sau " + MAX_ATTEMPTS + " lần thử");
     }
-
-    //Sau này đổi thành giải thuật tạo n-1 đống rồi dựa trên nim-sum tạo ra đống cuối để tối ưu
 }

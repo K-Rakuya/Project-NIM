@@ -1,19 +1,9 @@
 package nim.core;
 
-/**
- * Định lý Bouton cho NIM thường và misère
- * NimTheory
- */
 public final class NimTheory {
-
     private NimTheory() {
     }
 
-    /**
-     * Đếm số lượng đống có 1 item
-     * @param s
-     * @return number
-     */
     private static int countOnes(GameState s) {
         int n = 0;
         for (int i = 0; i < s.heapCount(); i++)
@@ -23,11 +13,6 @@ public final class NimTheory {
         return n;
     }
 
-    /**
-     * Đếm số lượng đống có ít nhất 2 item
-     * @param s
-     * @return number
-     */
     private static int countBigHeaps(GameState s) {
         int n = 0;
         for (int i = 0; i < s.heapCount(); i++)
@@ -37,11 +22,6 @@ public final class NimTheory {
         return n;
     }
 
-    /**
-     * Tìm đống lớn đầu tiên
-     * @param s
-     * @return index của đống lớn đầu tiên tìm được
-     */
     private static int firstBigHeaps(GameState s) {
         for (int i = 0; i < s.heapCount(); i++)
             if (s.heap(i) >= 2) {
@@ -50,22 +30,12 @@ public final class NimTheory {
         return -1;
     }
 
-    /**
-     * Người đang đến lượt có thua không, với giả thiết hai bên chơi tối ưu?
-     *
-     * Luật thường (định lý Bouton): thua <=> nim-sum == 0.
-     * 1: từ thế nim-sum != 0 luôn tồn tại nước đi đưa về nim-sum == 0.
-     * 2: từ thế nim-sum == 0, mọi nước đi đều làm nim-sum != 0.
-     *
-     * Luật misère: chừng nào còn ít nhất một đống >= 2 ite,, chiến lược giống
-     * luật thường. Khi mọi đống chỉ còn 0 hoặc 1 item, thế cờ đảo ngược:
-     * thua <=> số đống 1-item là lẻ.
-     */
-
-    /**
-     * Tính toán thế ván hiện tại thắng hay thua
-     * @param s
-     * @return boolean
+    /*
+     * Định lý Bouton (luật thường): người đến lượt thua <=> nim-sum == 0.
+     * - Từ nim-sum != 0 luôn tồn tại nước đưa về nim-sum == 0.
+     * - Từ nim-sum == 0 mọi nước đi đều làm nim-sum != 0.
+     * Luật misère: chiến lược giống luật thường cho tới khi mọi đống <= 1;
+     * khi đó thế cờ đảo ngược, người đến lượt thua <=> số đống 1-item là lẻ.
      */
     public static boolean isLosingForCurrentPlayer(GameState s) {
         if (s.isMisere() && countBigHeaps(s) == 0) {
@@ -74,21 +44,15 @@ public final class NimTheory {
         return s.nimSum() == 0;
     }
 
-    /**
-     * Trả về một nước đi thắng, hoặc null nếu đang ở thế thua / ván đã hết.
-     * @return Move
-     */
     public static Move findingWinningMove(GameState s) {
         if (s.isTerminal() || isLosingForCurrentPlayer(s)) {
             return null;
         }
 
+        // Misère còn đống >= 2: chỉ cần để lại số đống 1-item lẻ cho đối thủ.
         if (s.isMisere()) {
             int big = countBigHeaps(s);
 
-            // Mọi đống đều <= 1 item, và số đống 1-item đang chẵn (vì giả định đang ở thế
-            // thắng).
-            // Bốc 1 item để đối thủ nhận số lẻ đống 1-item.
             if (big == 0) {
                 for (int i = 0; i < s.heapCount(); i++) {
                     if (s.heap(i) == 1)
@@ -96,7 +60,6 @@ public final class NimTheory {
                 }
             }
 
-            // có 1 đống lớn: làm cho số đống 1-item còn lại là lẻ;
             if (big == 1) {
                 int idx = firstBigHeaps(s);
                 int keep = (countOnes(s) % 2 == 0) ? 1 : 0;
@@ -104,25 +67,22 @@ public final class NimTheory {
             }
         }
 
-        /**
-         * Luật thường, hoặc misère khi còn >= 2 đống lớn: đưa nim-sum về 0.
+        /*
+         * x = h0 XOR h1 XOR h2 ..... XOR hi
+         * Gọi S la XOR của tất cả trừ đống thứ i
+         * x = S XOR hi
+         * x XOR hi = S
+         * 
+         * ta cần x1 mới = 0
+         * x1 = S XOR target
+         * S XOR target = 0
+         * x XOR hi XOR target = 0
+         * target = x XOR hi
+         * 
          */
+        // hợp lệ khi h' < h (chỉ được bớt item).
         int x = s.nimSum();
         for (int i = 0; i < s.heapCount(); i++) {
-
-            /*
-             * x = h0 XOR h1 XOR h2 ..... XOR hi
-             * Gọi S la XOR của tất cả trừ đống thứ i
-             * x = S XOR hi
-             * x XOR hi = S
-             * 
-             * ta cần x1 mới = 0
-             * x1 = S XOR target
-             * S XOR target = 0
-             * x XOR hi XOR target = 0
-             * target = x XOR hi
-             * 
-             */
             int target = s.heap(i) ^ x;
             if (target < s.heap(i)) {
                 return new Move(i, s.heap(i) - target);

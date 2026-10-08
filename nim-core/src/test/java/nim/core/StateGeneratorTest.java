@@ -9,7 +9,6 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 class StateGeneratorTest {
-
     @Test
     void sinhDungRangBuocThangThua() {
         StateGenerator gen = new StateGenerator(new Random(42));

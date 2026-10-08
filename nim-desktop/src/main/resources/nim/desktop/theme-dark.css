@@ -1,0 +1,32 @@
+.root {
+    -c-bg: #17191C;
+    -c-surface: #212428;
+    -c-border: #33373D;
+    -c-text: #ECEDEF;
+    -c-muted: #9AA0A8;
+    -c-accent: #8DB0E6;
+    -c-accent-soft: #2A3A55;
+    -c-on-accent: #12202F;
+    -c-hint: #E0A84A;
+    -c-table-a: #34373C;
+    -c-table-b: #2A2D32;
+    -c-table-edge: #45494F;
+    -c-table-line: rgba(255,255,255,0.07);
+    -c-item-top: #ECE8DF;
+    -c-item-side: #A9A498;
+    -c-item-rim: #6E6A60;
+    -c-item-ring: #CFCABE;
+    -c-item-preview-top: #DCE6F7;
+    -c-item-preview-side: #8DA6CC;
+    -c-item-selected-top: #BFD3F2;
+    -c-item-selected-side: #6F93C8;
+    -c-item-hint-top: #F4E1B8;
+    -c-item-hint-side: #C99A4B;
+    -c-seat-bg: rgba(255,255,255,0.07);
+    -c-seat-text: #ECEDEF;
+    -c-seat-sub: #A5AAB2;
+    -c-status: #B8BCC4;
+    -c-good: #6CC38C;
+    -c-bad: #E27B70;
+    -c-shadow: rgba(0,0,0,0.55);
+}

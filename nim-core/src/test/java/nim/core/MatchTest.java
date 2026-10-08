@@ -15,7 +15,6 @@ import nim.core.GameConfig.Opening;
 import nim.core.ai.AiLevel;
 
 class MatchTest {
-
     private static GameConfig vsAi(int humanSeat) {
         return new GameConfig(Mode.VS_AI, false, 3, 9, Opening.RANDOM, AiLevel.HARD, humanSeat);
     }
@@ -26,7 +25,7 @@ class MatchTest {
 
     @Test
     void humanCannotPlayOnAiTurn() {
-        Match m = fixed(vsAi(1), 3, 4, 5); // máy đi trước
+        Match m = fixed(vsAi(1), 3, 4, 5);
         assertTrue(m.isAiTurn());
         assertThrows(IllegalStateException.class, () -> m.play(new Move(0, 1)));
         m.playAi();
@@ -58,12 +57,12 @@ class MatchTest {
     @Test
     void undoWhenAiMovesFirstKeepsOpeningMove() {
         Match m = fixed(vsAi(1), 3, 4, 5);
-        m.playAi();                 // máy đi trước
-        m.play(new Move(0, 1));     // người đi
         m.playAi();
-        assertTrue(m.undo());       // lùi về ngay sau nước đầu của máy
+        m.play(new Move(0, 1));
+        m.playAi();
+        assertTrue(m.undo());
         assertEquals(1, m.session().history().size());
-        assertFalse(m.canUndo());   // không còn nước nào của người để lùi
+        assertFalse(m.canUndo());
     }
 
     @Test
@@ -76,7 +75,7 @@ class MatchTest {
 
     @Test
     void hintCountsUsageAndIsEmptyOnLostPosition() {
-        Match m = fixed(vsAi(0), 1, 1);   // nim-sum = 0 => thế thua
+        Match m = fixed(vsAi(0), 1, 1);
         assertTrue(m.hint().isEmpty());
         assertEquals(1, m.hintsUsed());
         Match w = fixed(vsAi(0), 1, 2);
@@ -93,7 +92,7 @@ class MatchTest {
             else
                 m.playAi();
         }
-        assertEquals(1, m.winner()); // máy thắng
+        assertEquals(1, m.winner());
     }
 
     @Test

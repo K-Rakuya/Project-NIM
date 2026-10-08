@@ -2,9 +2,6 @@ package nim.core.ai;
 
 import java.util.Random;
 
-/**
- * Các mức độ khó dành cho người chơi
- */
 public enum AiLevel {
     EASY("Dễ", "Đi ngẫu nhiên"),
     MEDIUM("Vừa", "Chơi tối ưu nhưng sai khoảng 30% số lượt"),

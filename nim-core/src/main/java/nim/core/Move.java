@@ -1,12 +1,6 @@
 package nim.core;
 
-/**
- * Move
- * @param heapIndex
- * @param count
- */
 public record Move(int heapIndex, int count) {
-
     public Move {
         if (heapIndex < 0) {
             throw new IllegalArgumentException("heapIndex phải >= 0");

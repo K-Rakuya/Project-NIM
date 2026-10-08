@@ -6,7 +6,7 @@
 ![Build](https://img.shields.io/badge/Build-Gradle-blue)
 ![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
 
-## Giới thiệus
+## Giới thiệu
 
 Dự án cài đặt trò chơi **NIM** — một trò chơi tổ hợp công bằng hai người chơi.
 
@@ -26,11 +26,15 @@ Sản phẩm cho học phần **Niên luận cơ sở**:
 - [x] Lưu / tải ván đang chơi
 - [x] Undo nước đi, gợi ý nước đi kèm debug nim-sum hiện tại
 - [x] Client console để chơi và kiểm thử thủ công
+- [x] Giao diện đồ họa JavaFX: các đống item đặt trên mặt bàn, theme sáng/tối
+- [x] Ván mới tùy chỉnh (chế độ, luật, mức máy, thứ tự đi, thế mở màn, số đống/vật phẩm)
+- [x] Gợi ý, hoàn tác, lịch sử nước đi, bảng điểm theo phiên
+- [x] Chế độ phân tích nim-sum (nhị phân + XOR) để học định lý Bouton
+- [x] Lưu/mở ván bằng hộp thoại, tự lưu và khôi phục ván dở
 - [x] Bộ test JUnit 5 đối chiếu cài đặt với lý thuyết trên tập thế cờ vét cạn
+- [x] Công cụ tự đấu (AI vs AI), xuất số liệu
 
 **Đang phát triển**
-- [ ] Công cụ tự đấu (AI vs AI), xuất số liệu
-- [ ] Giao diện đồ họa JavaFX
 - [ ] Đóng gói cài đặt bằng `jpackage`
 - [ ] Chế độ 1vs1 online qua server riêng
 - [ ] Hình ảnh low-poly dựng từ Blender (Optional)
@@ -58,6 +62,9 @@ cd Project-NIM
 # Build toàn bộ dự án
 ./gradlew build
 
+# Chạy ứng dụng desktop (JavaFX)
+./gradlew :nim-desktop:run
+
 # Chạy client console
 ./gradlew :nim-cli:run --console=plain -q
 ```
@@ -79,6 +86,22 @@ Bộ test bao gồm:
 1. Chọn chế độ: người vs máy, người vs người, hoặc tải ván đã lưu
 2. Nhập nước đi theo cú pháp `<số đống> <số items>` — ví dụ `2 3` nghĩa là bốc 3 items ở đống 2
 3. Lệnh phụ: `hint` (gợi ý nước đi), `undo` (lùi nước), `save <file>` (lưu ván), `quit` (thoát)
+
+## Cách chơi (ứng dụng desktop)
+
+- Di chuột vào một vật phẩm để xem trước, bấm để chọn, bấm lần nữa (hoặc nút **Bốc** / phím Enter) để xác nhận.
+  Chọn một vật phẩm nghĩa là bốc nó **và mọi vật phẩm phía trên nó** trong cùng đống.
+- Phím tắt: `←` `→` chọn đống, `↑` `↓` đổi số lượng, `Enter` xác nhận, `Esc` hủy chọn.
+- `Ctrl+N` ván mới, `Ctrl+O` mở, `Ctrl+S` lưu, `Ctrl+Z` hoàn tác, `H` gợi ý.
+- Ván đang chơi tự lưu tại `~/.nim/autosave.nim` và được khôi phục lần mở sau.
+
+## Cấu trúc module
+
+| Module | Nội dung |
+|---|---|
+| `nim-core` | Luật chơi, lý thuyết Bouton, AI, `Match`/`GameConfig` (không phụ thuộc giao diện), lưu/tải |
+| `nim-cli` | Client console và công cụ benchmark |
+| `nim-desktop` | Ứng dụng JavaFX |
 
 ## Tài liệu tham khảo
 

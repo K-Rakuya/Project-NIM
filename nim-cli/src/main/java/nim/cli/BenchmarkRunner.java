@@ -16,7 +16,6 @@ import nim.core.ai.OptimalAi;
 import nim.core.ai.RandomAi;
 
 public class BenchmarkRunner {
-
     static final Path OUT_DIR = Path.of("benchmarks");
 
     public static void main(String[] args) throws IOException {
@@ -34,7 +33,6 @@ public class BenchmarkRunner {
         System.out.println("\nXong. Xem thư mục " + OUT_DIR.toAbsolutePath());
     }
 
-    // Áp đảo
     static void runDominance() throws IOException {
         final int games = 200;
         Random random = new Random(2302);
@@ -67,11 +65,9 @@ public class BenchmarkRunner {
                     }
                 }
             }
-
         }
     }
 
-    // Hiệu chỉnh độ khó
     static void runDifficulty() throws IOException {
         final int games = 200;
         double[] rates = { 0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0 };

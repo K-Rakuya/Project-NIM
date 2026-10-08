@@ -13,7 +13,6 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MinimaxAiTest {
-
     @Test
     void danhGiaKhopVoiDinhLyBoutonTrenTapTheCoNho() {
         MinimaxAi ai = new MinimaxAi();
@@ -56,7 +55,7 @@ class MinimaxAiTest {
         long prunedNodes = coCatTia.lastNodesVisited();
 
         assertTrue(prunedNodes <= fullNodes, "Alpha-beta phải duyệt số nút <= minimax đầy đủ");
-        // Số liệu thống kê
+
         System.out.printf("  Bàn (4,5,6): đầy đủ=%d nút, alpha-beta=%d nút (giảm %.1f lần)%n",
                 fullNodes, prunedNodes, (double) fullNodes / prunedNodes);
     }
