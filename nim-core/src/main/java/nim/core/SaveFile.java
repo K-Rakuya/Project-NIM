@@ -4,7 +4,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import nim.core.ai.AiLevel;
 
 /**
  * Định dạng văn bản phiên bản 1, không phụ thuộc thư viện ngoài.
@@ -31,6 +36,22 @@ public final class SaveFile {
      * @throws IOException
      */
     public static void save(GameSession session, Path file) throws IOException {
+        write(session, "", file);
+    }
+
+    /**
+     * Lưu cả thông tin cấu hình (chế độ, mức máy, ghế người chơi) dưới dạng các
+     * khóa phụ. Header vẫn là {@code nim-save 1} và các khóa lạ
+     */
+    public static void save(Match match, Path file) throws IOException {
+        GameConfig c = match.config();
+        String extras = "mode=" + c.mode().name() + "\n"
+                + "ai=" + c.level().name() + "\n"
+                + "human=" + c.humanSeat() + "\n";
+        write(match.session(), extras, file);
+    }
+
+    private static void write(GameSession session, String extras, Path file) throws IOException {
         // Tạo đối tượng StringBuilder do chuỗi hay thay đổi
         StringBuilder sb = new StringBuilder();
         sb.append("nim-save 1\n");
@@ -55,6 +76,7 @@ public final class SaveFile {
             sb.append(moves.get(i).heapIndex()).append(':').append(moves.get(i).count());
         }
         sb.append('\n');
+        sb.append(extras);
 
         // Check thư mục cha chưa tồn tại thì tạo luôn tránh gây lỗi
         if (file.getParent() != null)
@@ -64,6 +86,43 @@ public final class SaveFile {
 
     //load session
     public static GameSession load(Path file) throws IOException {
+        return parse(file).session();
+    }
+
+    /** Tải ván kèm cấu hình; thiếu khóa phụ được hiểu là người vs người. */
+    public static Match loadMatch(Path file, Random random) throws IOException {
+        Parsed p = parse(file);
+        GameConfig.Mode mode = GameConfig.Mode.VS_HUMAN;
+        AiLevel level = AiLevel.MEDIUM;
+        int human = 0;
+        try {
+            if (p.extras().containsKey("mode"))
+                mode = GameConfig.Mode.valueOf(p.extras().get("mode"));
+            if (p.extras().containsKey("ai"))
+                level = AiLevel.valueOf(p.extras().get("ai"));
+            if (p.extras().containsKey("human"))
+                human = Integer.parseInt(p.extras().get("human"));
+        } catch (IllegalArgumentException e) {
+            throw new IOException("Cấu hình trong file không hợp lệ: " + e.getMessage());
+        }
+
+        GameState init = p.session().initialState();
+        int max = 1;
+        for (int h : init.heaps())
+            max = Math.max(max, h);
+        try {
+            GameConfig cfg = new GameConfig(mode, init.isMisere(), init.heapCount(),
+                    Math.min(max, GameConfig.MAX_ITEMS), GameConfig.Opening.RANDOM, level, human);
+            return Match.resume(cfg, p.session(), random);
+        } catch (IllegalArgumentException e) {
+            throw new IOException("Ván lưu vượt giới hạn giao diện: " + e.getMessage());
+        }
+    }
+
+    private record Parsed(GameSession session, Map<String, String> extras) {
+    }
+
+    private static Parsed parse(Path file) throws IOException {
         List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
         if(lines.isEmpty() || !lines.get(0).startsWith("nim-save 1"))
             throw new IOException("File không hợp lệ");
@@ -72,6 +131,7 @@ public final class SaveFile {
         boolean misere = false;
         int[] initial = null;
         String movesLine = "";
+        Map<String, String> extras = new HashMap<>();
         
         //cắt string từng dòng
         for (String line : lines.subList(1, lines.size())) {
@@ -83,7 +143,7 @@ public final class SaveFile {
                 case "misere"   ->  misere = Boolean.parseBoolean(value);
                 case "initial"  ->  initial = parseInts(value);
                 case "moves"    ->  movesLine = value;
-                default         ->  {}
+                default         ->  extras.put(key, value);
             }
         }
 
@@ -100,7 +160,7 @@ public final class SaveFile {
             }
         }
         
-        return session;
+        return new Parsed(session, extras);
     }
 
     // ParseInt nè

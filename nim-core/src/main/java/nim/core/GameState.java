@@ -25,7 +25,7 @@ public final class GameState {
         if (currentPlayer != 0 && currentPlayer != 1) {
             throw new IllegalArgumentException("currentPlayer chỉ chấp nhận 0 và 1");
         }
-        this.heaps = heaps;
+        this.heaps = heaps.clone();
         this.currentPlayer = currentPlayer;
         this.misere = misere;
     }

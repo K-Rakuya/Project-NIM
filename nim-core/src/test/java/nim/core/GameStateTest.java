@@ -54,4 +54,12 @@ public class GameStateTest {
         assertTrue(s.isTerminal());
         assertEquals(1, s.winner());
     }
+
+    @Test
+    void stateIsImmutableEvenIfCallerKeepsTheArray() {
+        int[] raw = { 3, 4, 5 };
+        GameState s = new GameState(raw, 0, false);
+        raw[0] = 99;
+        assertEquals(3, s.heap(0));
+    }
 }
