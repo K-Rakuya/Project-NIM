@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.animation.Animation;
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
-import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.effect.GaussianBlur;
@@ -37,6 +34,7 @@ final class HeapView extends VBox {
     private final List<ItemNode> items = new ArrayList<>();
     private final Label title = new Label();
     private final Label total = new Label();
+    private final Ellipse shadow;
     private final double stackHeight;
     private Animation running;
     private boolean interactive;
@@ -53,8 +51,7 @@ final class HeapView extends VBox {
         stack.setMinSize(w, stackHeight);
         stack.setMaxSize(w, stackHeight);
 
-        Ellipse shadow = new Ellipse(w / 2 + 7, baseY() + ItemNode.THICKNESS + 3,
-                ItemNode.RX + 8, ItemNode.RY + 4);
+        shadow = new Ellipse(w / 2 + 7, baseY() + ItemNode.THICKNESS + 3, ItemNode.RX + 8, ItemNode.RY + 4);
         shadow.getStyleClass().add("item-shadow");
         shadow.setEffect(new GaussianBlur(9));
         shadow.setMouseTransparent(true);
@@ -96,6 +93,7 @@ final class HeapView extends VBox {
 
     void setCount(int n, boolean dropIn) {
         stopAnimation();
+        int previous = count;
         stack.getChildren().removeAll(items);
         items.clear();
         count = n;
@@ -121,26 +119,28 @@ final class HeapView extends VBox {
             c.setCursor(interactive ? javafx.scene.Cursor.HAND : javafx.scene.Cursor.DEFAULT);
             items.add(c);
             stack.getChildren().add(c);
-
-            if (dropIn) {
-                c.setOpacity(0);
-                c.setTranslateY(-28);
-                TranslateTransition tt = new TranslateTransition(Duration.millis(260), c);
-                tt.setToY(0);
-                FadeTransition ft = new FadeTransition(Duration.millis(220), c);
-                ft.setToValue(1);
-                ParallelTransition p = new ParallelTransition(tt, ft);
-                p.setDelay(Duration.millis(30L * k));
-                drops.add(p);
-            }
+            if (dropIn)
+                drops.add(c.dropIn(60L * k + 90L * index));
         }
-        total.setText(String.valueOf(n));
+        setText(String.valueOf(n), previous != n && previous > 0 && !dropIn);
+        // Đống đã hết: mờ cả bóng lẫn nhãn
+        boolean empty = n == 0;
+        Motion.to(shadow, "empty", shadow.opacityProperty(), empty ? 0 : 1, Motion.BASE, Motion.STANDARD);
+        Motion.to(title, "empty", title.opacityProperty(), empty ? 0.35 : 1, Motion.BASE, Motion.STANDARD);
+        Motion.to(total, "empty", total.opacityProperty(), empty ? 0.35 : 1, Motion.BASE, Motion.STANDARD);
+
         if (!drops.isEmpty()) {
-            ParallelTransition all = new ParallelTransition(drops.toArray(new Animation[0]));
+            Animation all = Motion.together(drops.toArray(new Animation[0]));
             running = all;
             all.setOnFinished(e -> running = null);
             all.play();
         }
+    }
+
+    private void setText(String text, boolean animate) {
+        total.setText(text);
+        if (animate)
+            Motion.pop(total);
     }
 
     void mark(int fromItem, ItemNode.State s) {
@@ -148,8 +148,8 @@ final class HeapView extends VBox {
             c.setState(c.index() >= fromItem ? s : ItemNode.State.NORMAL);
         int remaining = Math.max(0, Math.min(fromItem, count));
         total.setText(count + "  →  " + remaining);
-        total.getStyleClass().remove("heap-count-delta");
-        total.getStyleClass().add("heap-count-delta");
+        if (!total.getStyleClass().contains("heap-count-delta"))
+            total.getStyleClass().add("heap-count-delta");
     }
 
     void unmark() {
@@ -163,25 +163,25 @@ final class HeapView extends VBox {
         stopAnimation();
         int from = count - n;
         List<ItemNode> taken = new ArrayList<>(items.subList(from, count));
-        for (ItemNode c : taken)
+        for (ItemNode c : taken) {
+            c.freeze();
             c.setState(preview ? ItemNode.State.PREVIEW : ItemNode.State.SELECTED);
+        }
 
         SequentialTransition seq = new SequentialTransition();
+        // Máy đi: dừng một nhịp để người chơi kịp thấy vật phẩm nào sắp bị bốc.
         if (preview)
-            seq.getChildren().add(new PauseTransition(Duration.millis(420)));
+            seq.getChildren().add(new PauseTransition(Duration.millis(520)));
+        else
+            seq.getChildren().add(new PauseTransition(Duration.millis(60)));
 
-        ParallelTransition fly = new ParallelTransition();
+        List<Animation> fly = new ArrayList<>();
         for (int i = 0; i < taken.size(); i++) {
             ItemNode c = taken.get(taken.size() - 1 - i);
-            TranslateTransition tt = new TranslateTransition(Duration.millis(240), c);
-            tt.setByY(-40);
-            FadeTransition ft = new FadeTransition(Duration.millis(240), c);
-            ft.setToValue(0);
-            ParallelTransition p = new ParallelTransition(tt, ft);
-            p.setDelay(Duration.millis(40L * i));
-            fly.getChildren().add(p);
+            c.freeze();
+            fly.add(c.flyAway(45L * i));
         }
-        seq.getChildren().add(fly);
+        seq.getChildren().add(Motion.together(fly.toArray(new Animation[0])));
         running = seq;
         seq.setOnFinished(e -> {
             running = null;

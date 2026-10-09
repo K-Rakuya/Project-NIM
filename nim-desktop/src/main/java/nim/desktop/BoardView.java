@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
@@ -24,7 +25,7 @@ final class BoardView extends StackPane {
     private final StackPane bottomSeatHolder = new StackPane();
     private final HBox heapsBox = new HBox(34);
     private final StackPane heapsHolder = new StackPane(heapsBox);
-    private final Label status = new Label();
+    private final StatusBar status = new StatusBar();
     private final Label pillText = new Label();
     private final HBox pill = new HBox(10);
     private final StackPane infoRow = new StackPane();
@@ -55,11 +56,10 @@ final class BoardView extends StackPane {
         heapsBox.layoutBoundsProperty().addListener((o, a, b) -> fitHeaps());
         VBox.setVgrow(heapsHolder, Priority.ALWAYS);
 
-        status.getStyleClass().add("status");
-        Button confirm = new Button("Bốc");
+        Button confirm = Wash.install(new Button("Bốc"));
         confirm.getStyleClass().addAll("btn", "primary");
         confirm.setOnAction(e -> confirm());
-        Button cancel = new Button("Hủy");
+        Button cancel = Wash.install(new Button("Hủy"));
         cancel.getStyleClass().addAll("btn", "ghost");
         cancel.setOnAction(e -> clearSelection());
         pillText.getStyleClass().add("pill-text");
@@ -67,6 +67,7 @@ final class BoardView extends StackPane {
         pill.setAlignment(Pos.CENTER);
         pill.getStyleClass().add("pill");
         pill.setVisible(false);
+        pill.setOpacity(0);
         pill.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         infoRow.getChildren().addAll(status, pill);
         infoRow.setMinHeight(48);
@@ -79,6 +80,7 @@ final class BoardView extends StackPane {
         bottomSeatHolder.setAlignment(Pos.CENTER);
 
         overlay.setVisible(false);
+        overlay.setOpacity(0);
         overlay.getStyleClass().add("overlay");
 
         getChildren().addAll(surface, inset, content, overlay);
@@ -103,7 +105,7 @@ final class BoardView extends StackPane {
 
     void setup(GameState s, int capacity, boolean dropIn) {
         clearSelection();
-        hideResult();
+        hideResult(false);
         heaps.forEach(HeapView::stopAnimation);
         heaps.clear();
         heapsBox.getChildren().clear();
@@ -166,7 +168,11 @@ final class BoardView extends StackPane {
     }
 
     void setStatus(String text) {
-        status.setText(text);
+        status.set(text, StatusBar.Kind.INFO);
+    }
+
+    void setStatus(String text, StatusBar.Kind kind) {
+        status.set(text, kind);
     }
 
     void setInputEnabled(boolean on) {
@@ -193,30 +199,86 @@ final class BoardView extends StackPane {
     }
 
     void showResult(String title, String subtitle, Runnable onNewGame) {
+        Region disc = new Region();
+        disc.getStyleClass().add("result-disc");
+        SVGPath check = new SVGPath();
+        check.setContent(Icons.CHECK);
+        check.getStyleClass().add("result-check");
+        StackPane badge = new StackPane(disc, check);
+        badge.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+
+        Label kicker = new Label("KẾT THÚC VÁN");
+        kicker.getStyleClass().add("field-caption");
         Label t = new Label(title);
         t.getStyleClass().add("result-title");
         Label s = new Label(subtitle);
         s.getStyleClass().add("result-sub");
-        Button again = new Button("Ván mới");
+        s.setWrapText(true);
+        s.setMaxWidth(340);
+        s.setAlignment(Pos.CENTER);
+        s.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        Button again = Wash.install(new Button("Ván mới"));
         again.getStyleClass().addAll("btn", "primary");
         again.setOnAction(e -> onNewGame.run());
-        Button close = new Button("Đóng");
+        Button close = Wash.install(new Button("Xem lại bàn"));
         close.getStyleClass().addAll("btn", "ghost");
-        close.setOnAction(e -> hideResult());
-        VBox card = new VBox(6, t, s, new HBox(10, again, close) {{
-            setAlignment(Pos.CENTER);
-            setPadding(new Insets(14, 0, 0, 0));
-        }});
+        close.setOnAction(e -> hideResult(true));
+        HBox actions = new HBox(10, again, close);
+        actions.setAlignment(Pos.CENTER);
+        actions.setPadding(new Insets(16, 0, 0, 0));
+        VBox card = new VBox(6, badge, kicker, t, s, actions);
+        VBox.setMargin(kicker, new Insets(12, 0, 0, 0));
         card.setAlignment(Pos.CENTER);
         card.getStyleClass().add("result-card");
         card.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         overlay.getChildren().setAll(card);
         overlay.setVisible(true);
+        overlay.setMouseTransparent(false);
+
+        // Nền mờ vào trước, thẻ kết quả nảy lên sau, huy hiệu nảy cuối cùng.
+        Motion.to(overlay, "o", overlay.opacityProperty(), 1, Motion.SLOW, Motion.STANDARD);
+        card.setOpacity(0);
+        card.setScaleX(0.9);
+        card.setScaleY(0.9);
+        card.setTranslateY(14);
+        javafx.animation.Timeline in = new javafx.animation.Timeline(new javafx.animation.KeyFrame(Motion.SLOW.add(javafx.util.Duration.millis(80)),
+                new javafx.animation.KeyValue(card.opacityProperty(), 1, Motion.EASE_OUT),
+                new javafx.animation.KeyValue(card.scaleXProperty(), 1, Motion.SETTLE),
+                new javafx.animation.KeyValue(card.scaleYProperty(), 1, Motion.SETTLE),
+                new javafx.animation.KeyValue(card.translateYProperty(), 0, Motion.EASE_OUT)));
+        in.setDelay(javafx.util.Duration.millis(120));
+        Motion.play(card, "in", in);
+        badge.setScaleX(0);
+        badge.setScaleY(0);
+        javafx.animation.Timeline b = new javafx.animation.Timeline(new javafx.animation.KeyFrame(javafx.util.Duration.millis(420),
+                new javafx.animation.KeyValue(badge.scaleXProperty(), 1, Motion.POP),
+                new javafx.animation.KeyValue(badge.scaleYProperty(), 1, Motion.POP)));
+        b.setDelay(javafx.util.Duration.millis(380));
+        Motion.play(badge, "in", b);
     }
 
     void hideResult() {
-        overlay.setVisible(false);
-        overlay.getChildren().clear();
+        hideResult(true);
+    }
+
+    private void hideResult(boolean animated) {
+        if (!overlay.isVisible())
+            return;
+        if (!animated) {
+            Motion.cancel(overlay, "o");
+            overlay.setVisible(false);
+            overlay.setOpacity(0);
+            overlay.getChildren().clear();
+            return;
+        }
+        overlay.setMouseTransparent(true);
+        javafx.animation.Timeline t = new javafx.animation.Timeline(new javafx.animation.KeyFrame(Motion.BASE,
+                new javafx.animation.KeyValue(overlay.opacityProperty(), 0, Motion.EASE_IN)));
+        t.setOnFinished(e -> {
+            overlay.setVisible(false);
+            overlay.getChildren().clear();
+        });
+        Motion.play(overlay, "o", t);
     }
 
     private void select(int heap, int count) {
@@ -228,15 +290,18 @@ final class BoardView extends StackPane {
         HeapView h = heaps.get(heap);
         h.mark(h.count() - count, ItemNode.State.SELECTED);
         pillText.setText("Đống " + (heap + 1) + "  ·  bốc " + count);
-        pill.setVisible(true);
-        status.setVisible(false);
+        if (!pill.isVisible() || pill.getOpacity() < 1)
+            Motion.show(pill);
+        else
+            Motion.pop(pillText);
+        Motion.to(status, "o", status.opacityProperty(), 0, Motion.FAST, Motion.STANDARD);
     }
 
     private void clearSelection() {
         selHeap = -1;
         selCount = 0;
-        pill.setVisible(false);
-        status.setVisible(true);
+        Motion.hide(pill);
+        Motion.to(status, "o", status.opacityProperty(), 1, Motion.BASE, Motion.STANDARD);
         heaps.forEach(HeapView::unmark);
     }
 

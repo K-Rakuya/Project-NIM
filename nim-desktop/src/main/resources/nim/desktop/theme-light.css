@@ -29,4 +29,18 @@
     -c-good: #2F7D4F;
     -c-bad: #B4443A;
     -c-shadow: rgba(40,32,20,0.30);
+    -c-header: #FBFAF8;
+    -c-hair: #E6E3DB;
+    -c-wash: rgba(30,32,36,0.07);
+    -c-press: rgba(30,32,36,0.07);
+    -c-wash-accent: rgba(255,255,255,0.16);
+    -c-press-accent: rgba(0,0,0,0.16);
+    -c-ring: rgba(58,90,140,0.55);
+    -c-elev: rgba(30,25,15,0.12);
+    -c-elev-strong: rgba(30,25,15,0.26);
+    -c-warn: #B7791F;
+    -c-warn-soft: #F7EBD3;
+    -c-bad-soft: #F6DEDA;
+    -c-good-soft: #DCEFE3;
+    -c-scrim: rgba(30,28,24,0.32);
 }
