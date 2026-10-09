@@ -27,6 +27,8 @@ Sản phẩm cho học phần **Niên luận cơ sở**:
 - [x] Undo nước đi, gợi ý nước đi kèm debug nim-sum hiện tại
 - [x] Client console để chơi và kiểm thử thủ công
 - [x] Giao diện đồ họa JavaFX: các đống item đặt trên mặt bàn, theme sáng/tối
+- [x] Hệ thống chuyển động thống nhất (`Motion`): hover/nhấn nút, chọn vật phẩm, đổi lượt, bật/tắt panel, hộp thoại, kết quả ván
+- [x] Quy trình thao tác chuẩn: xác nhận trước khi bỏ ván đang dở, hộp thoại lỗi/hướng dẫn (F1), chú thích phím tắt, trạng thái tự lưu
 - [x] Ván mới tùy chỉnh (chế độ, luật, mức máy, thứ tự đi, thế mở màn, số đống/vật phẩm)
 - [x] Gợi ý, hoàn tác, lịch sử nước đi, bảng điểm theo phiên
 - [x] Chế độ phân tích nim-sum (nhị phân + XOR) để học định lý Bouton
@@ -92,7 +94,7 @@ Bộ test bao gồm:
 - Di chuột vào một vật phẩm để xem trước, bấm để chọn, bấm lần nữa (hoặc nút **Bốc** / phím Enter) để xác nhận.
   Chọn một vật phẩm nghĩa là bốc nó **và mọi vật phẩm phía trên nó** trong cùng đống.
 - Phím tắt: `←` `→` chọn đống, `↑` `↓` đổi số lượng, `Enter` xác nhận, `Esc` hủy chọn.
-- `Ctrl+N` ván mới, `Ctrl+O` mở, `Ctrl+S` lưu, `Ctrl+Z` hoàn tác, `H` gợi ý.
+- `Ctrl+N` ván mới, `Ctrl+O` mở, `Ctrl+S` lưu, `Ctrl+Z` hoàn tác, `H` gợi ý, `F1` hướng dẫn.
 - Ván đang chơi tự lưu tại `~/.nim/autosave.nim` và được khôi phục lần mở sau.
 
 ## Cấu trúc module
