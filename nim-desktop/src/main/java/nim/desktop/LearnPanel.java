@@ -9,14 +9,16 @@ final class LearnPanel extends VBox {
     private final Label table = new Label();
     private final Label verdict = new Label();
     private final Label note = new Label();
+    private Boolean lastLosing;
 
     LearnPanel() {
-        super(8);
+        super(10);
         getStyleClass().add("side-card");
         Label title = new Label("PHÂN TÍCH NIM-SUM");
         title.getStyleClass().add("field-caption");
-        table.getStyleClass().add("mono");
-        verdict.getStyleClass().add("verdict");
+        table.getStyleClass().addAll("mono", "code-box");
+        table.setMaxWidth(Double.MAX_VALUE);
+        verdict.getStyleClass().addAll("verdict");
         verdict.setWrapText(true);
         note.getStyleClass().add("field-hint");
         note.setWrapText(true);
@@ -33,20 +35,25 @@ final class LearnPanel extends VBox {
             sb.append(String.format("%-5s %s  %2d%n", "#" + (i + 1), binary(s.heap(i), bits), s.heap(i)));
         sb.append("─".repeat(6 + (bits * 2 - 1) + 4)).append('\n');
         sb.append(String.format("%-5s %s  %2d", "XOR", binary(s.nimSum(), bits), s.nimSum()));
-        table.setText(sb.toString());
+        Motion.swapText(table, sb.toString());
 
         if (s.isTerminal()) {
-            verdict.setText("Ván đã kết thúc");
-            note.setText("");
+            Motion.swapText(verdict, "Ván đã kết thúc");
+            verdict.getStyleClass().removeAll("good", "bad");
+            lastLosing = null;
+            Motion.swapText(note, "");
             return;
         }
         boolean losing = NimTheory.isLosingForCurrentPlayer(s);
-        verdict.setText(losing ? "Thế thua cho người đang đi" : "Thế thắng cho người đang đi");
+        Motion.swapText(verdict, losing ? "Thế thua cho người đang đi" : "Thế thắng cho người đang đi");
         verdict.getStyleClass().removeAll("good", "bad");
         verdict.getStyleClass().add(losing ? "bad" : "good");
+        if (lastLosing != null && lastLosing != losing)
+            Motion.pop(verdict);
+        lastLosing = losing;
 
         boolean endgame = s.isMisere() && s.heaps().length > 0 && maxHeap(s) <= 1;
-        note.setText(endgame
+        Motion.swapText(note, endgame
                 ? "Misère, mọi đống ≤ 1: người đi thua khi số đống còn 1 vật phẩm là lẻ."
                 : s.isMisere()
                         ? "Misère: chơi như luật thường cho tới khi mọi đống ≤ 1. Nim-sum = 0 là thế thua."
